@@ -1,4 +1,3 @@
-
 import { 
   ActivityIcon, 
   HandshakeIcon, 
@@ -19,40 +18,40 @@ import { CallToAction } from '@/components/CallToAction';
 // Example testimonial data
 const testimonials: TestimonialType[] = [
   {
-    id: '1',
-    content: 'Being part of BLKOUTNXT has connected me with mentors and peers who understand my experience. The resources and support have been transformative for my personal and professional growth.',
+    id: "1",
+    content: "Being part of BLKOUTNXT has connected me with mentors and peers who understand my experience. The resources and support have been transformative for my personal and professional growth.",
     author: {
-      name: 'Marcus Johnson',
-      avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-      role: 'Community Member',
+      name: "Marcus Johnson",
+      avatar: "https://randomuser.me/api/portraits/men/1.jpg",
+      role: "Community Member",
     },
     likes: 24,
     comments: 5,
-    date: '2 days ago',
+    date: "2 days ago",
   },
   {
-    id: '2',
-    content: 'The network I've built through BLKOUTNXT has opened doors I didn't even know existed. Finding community with other Black queer professionals has been invaluable.',
+    id: "2",
+    content: "The network I've built through BLKOUTNXT has opened doors I didn't even know existed. Finding community with other Black queer professionals has been invaluable.",
     author: {
-      name: 'Devon Williams',
-      avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
-      role: 'Network Partner',
+      name: "Devon Williams",
+      avatar: "https://randomuser.me/api/portraits/men/2.jpg",
+      role: "Network Partner",
     },
     likes: 18,
     comments: 3,
-    date: '1 week ago',
+    date: "1 week ago",
   },
   {
-    id: '3',
-    content: 'The educational resources and events have helped me navigate my career while staying true to my identity. BLKOUTNXT creates spaces where I can be my full self.',
+    id: "3",
+    content: "The educational resources and events have helped me navigate my career while staying true to my identity. BLKOUTNXT creates spaces where I can be my full self.",
     author: {
-      name: 'Jamal Thompson',
-      avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
-      role: 'Resource Contributor',
+      name: "Jamal Thompson",
+      avatar: "https://randomuser.me/api/portraits/men/3.jpg",
+      role: "Resource Contributor",
     },
     likes: 32,
     comments: 7,
-    date: '2 weeks ago',
+    date: "2 weeks ago",
   },
 ];
 
