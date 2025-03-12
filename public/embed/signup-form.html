@@ -72,7 +72,7 @@
       margin-bottom: 1.25rem;
     }
     
-    input {
+    input, select {
       width: 100%;
       padding: 0.9rem 1.25rem;
       background-color: rgba(255, 255, 255, 0.15);
@@ -84,11 +84,20 @@
       transition: all 0.2s;
     }
     
-    input::placeholder {
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1em;
+    }
+    
+    input::placeholder, select::placeholder {
       color: rgba(255, 255, 255, 0.7);
     }
     
-    input:focus {
+    input:focus, select:focus {
       border-color: rgba(255, 255, 255, 0.5);
       box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
     }
@@ -139,6 +148,10 @@
       border-radius: 0.5rem;
       margin-top: 1rem;
     }
+    
+    .hidden {
+      display: none;
+    }
 
     @media (max-width: 768px) {
       .signup-form {
@@ -157,49 +170,14 @@
 </head>
 <body>
   <div class="signup-container">
-    <!-- Black Queer Men Form -->
-    <div class="signup-form" id="bqm-form">
+    <!-- Unified Signup Form -->
+    <div class="signup-form">
       <div class="form-header">
         <div class="title">GET CONNECTED</div>
-        <div class="subtitle">BLACK QUEER MEN</div>
         <div class="tagline">JOIN THE CONVERSATION • GET MAIL • MEET THE COMMUNITY</div>
       </div>
       
-      <form id="bqm-signup-form">
-        <div class="form-group">
-          <input type="text" name="name" placeholder="First Name" required />
-        </div>
-        
-        <div class="form-group">
-          <input type="email" name="email" placeholder="Email" required />
-        </div>
-        
-        <input type="hidden" name="userType" value="black-queer-men" />
-        
-        <div class="checkbox-group">
-          <input type="checkbox" class="checkbox" id="bqm-consent" name="consent" required />
-          <label for="bqm-consent" class="checkbox-label">
-            I agree to receive email updates and promotions
-          </label>
-        </div>
-        
-        <button type="submit" class="btn-submit">Subscribe</button>
-        
-        <div class="success-message" id="bqm-success-message">
-          Thank you for subscribing! Welcome to our community.
-        </div>
-      </form>
-    </div>
-    
-    <!-- Accomplices/Allies Form -->
-    <div class="signup-form" id="allies-form">
-      <div class="form-header">
-        <div class="title">GET CONNECTED</div>
-        <div class="subtitle">ACCOMPLICES/ALLIES</div>
-        <div class="tagline">JOIN THE CONVERSATION • GET MAIL • MEET THE COMMUNITY</div>
-      </div>
-      
-      <form id="allies-signup-form">
+      <form id="signup-form">
         <div class="form-group">
           <input type="text" name="name" placeholder="First Name" required />
         </div>
@@ -209,21 +187,27 @@
         </div>
         
         <div class="form-group">
-          <input type="text" name="link" placeholder="Share a link that tells us about you" />
+          <select name="userType" id="userType" required>
+            <option value="" disabled selected>How do you identify?</option>
+            <option value="black-queer-men">Black Queer Man</option>
+            <option value="accomplices-allies">Accomplice/Ally</option>
+          </select>
         </div>
         
-        <input type="hidden" name="userType" value="accomplices-allies" />
+        <div class="form-group hidden" id="linkGroup">
+          <input type="text" name="link" id="linkInput" placeholder="Share a link that tells us about you" />
+        </div>
         
         <div class="checkbox-group">
-          <input type="checkbox" class="checkbox" id="allies-consent" name="consent" required />
-          <label for="allies-consent" class="checkbox-label">
+          <input type="checkbox" class="checkbox" id="consent" name="consent" required />
+          <label for="consent" class="checkbox-label">
             I agree to receive email updates and promotions
           </label>
         </div>
         
         <button type="submit" class="btn-submit">Subscribe</button>
         
-        <div class="success-message" id="allies-success-message">
+        <div class="success-message" id="success-message">
           Thank you for subscribing! Welcome to our community.
         </div>
       </form>
@@ -231,34 +215,35 @@
   </div>
   
   <script>
-    // Form submission handling for Black Queer Men form
-    document.getElementById('bqm-signup-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      document.getElementById('bqm-success-message').style.display = 'block';
-      this.reset();
-      
-      // Optional: Send data to parent window if embedded in an iframe
-      if (window.parent !== window) {
-        window.parent.postMessage({
-          type: 'FORM_SUBMIT',
-          formType: 'black-queer-men',
-          data: new FormData(this)
-        }, '*');
+    // Show/hide link field based on user type selection
+    document.getElementById('userType').addEventListener('change', function() {
+      const linkGroup = document.getElementById('linkGroup');
+      if (this.value === 'accomplices-allies') {
+        linkGroup.classList.remove('hidden');
+      } else {
+        linkGroup.classList.add('hidden');
       }
     });
     
-    // Form submission handling for Allies form
-    document.getElementById('allies-signup-form').addEventListener('submit', function(e) {
+    // Form submission handling
+    document.getElementById('signup-form').addEventListener('submit', function(e) {
       e.preventDefault();
-      document.getElementById('allies-success-message').style.display = 'block';
+      document.getElementById('success-message').style.display = 'block';
+      
+      // Get the form data
+      const formData = new FormData(this);
+      const userType = formData.get('userType');
+      
+      // Reset the form
       this.reset();
+      document.getElementById('linkGroup').classList.add('hidden');
       
       // Optional: Send data to parent window if embedded in an iframe
       if (window.parent !== window) {
         window.parent.postMessage({
           type: 'FORM_SUBMIT',
-          formType: 'accomplices-allies',
-          data: new FormData(this)
+          formType: userType,
+          data: Object.fromEntries(formData)
         }, '*');
       }
     });

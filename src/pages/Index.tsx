@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { ArrowRightIcon, HeartIcon, Users2Icon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -70,7 +69,7 @@ export default function Index() {
               <iframe 
                 src="/embed/signup-form.html" 
                 width="100%" 
-                height="1200" 
+                height="650" 
                 frameBorder="0"
                 className="max-w-[450px] mx-auto"
                 title="BLKOUTNXT Signup Form"
