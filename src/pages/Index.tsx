@@ -66,7 +66,14 @@ export default function Index() {
             </div>
             
             <div className="flex justify-center">
-              <SignupForm />
+              <iframe 
+                src="/embed/signup-form.html" 
+                width="100%" 
+                height="800" 
+                frameBorder="0"
+                className="max-w-[1200px] mx-auto"
+                title="BLKOUTNXT Signup Form"
+              />
             </div>
           </div>
         </section>
