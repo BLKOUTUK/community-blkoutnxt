@@ -1,0 +1,29 @@
+
+BLKOUTNXT Signup Form Embed Instructions
+=========================================
+
+To embed the BLKOUTNXT signup form on your website, follow these steps:
+
+1. Copy the HTML code below
+2. Paste it into your website's HTML where you want the form to appear
+3. Replace "https://your-app-url.com" with your actual deployed application URL
+
+Embed Code:
+-----------
+
+<iframe 
+  src="https://your-app-url.com/embed/signup-form.html" 
+  width="100%" 
+  height="650" 
+  frameborder="0"
+  style="max-width: 450px; margin: 0 auto; display: block;"
+  title="BLKOUTNXT Signup Form">
+</iframe>
+
+Customization:
+-------------
+- You can adjust the width and height parameters to fit your website's design
+- The max-width style ensures the form doesn't get too wide on large screens
+- For responsive designs, keep width="100%" and adjust max-width as needed
+
+Need help? Contact us at support@blkoutnxt.com
