@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { ArrowRightIcon, HeartIcon, Users2Icon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -66,14 +65,8 @@ export default function Index() {
               </p>
             </div>
             
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div className="flex justify-center">
-                <SignupForm userType="black-queer-men" />
-              </div>
-              
-              <div className="flex justify-center">
-                <SignupForm userType="accomplices-allies" />
-              </div>
+            <div className="flex justify-center">
+              <SignupForm />
             </div>
           </div>
         </section>
