@@ -1,41 +1,36 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
-  const { toast } = useToast();
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !password) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
       return;
     }
     
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      toast({
-        title: "Login successful",
-        description: "Welcome back to BLKOUTNXT!",
-      });
+    try {
+      await signIn(email, password);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -79,17 +74,13 @@ export function LoginForm() {
           <div className="w-full border-t border-border"></div>
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+          <span className="bg-background px-2 text-muted-foreground">Limited Access</span>
         </div>
       </div>
-      <Button variant="outline" type="button" className="w-full">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" className="h-4 w-4 mr-2" />
-        Sign in with Google
-      </Button>
       <p className="text-center text-sm text-muted-foreground">
-        Don't have an account?{" "}
+        Need dashboard access?{" "}
         <Link to="/auth/signup" className="text-primary hover:underline">
-          Sign up
+          Register here
         </Link>
       </p>
     </form>

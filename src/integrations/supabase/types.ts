@@ -317,6 +317,33 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          role: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id: string
+          role?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          role?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       project_applications: {
         Row: {
           applicant_id: string
@@ -446,6 +473,27 @@ export type Database = {
           },
         ]
       }
+      seats: {
+        Row: {
+          id: string
+          max_seats: number
+          updated_at: string | null
+          used_seats: number
+        }
+        Insert: {
+          id?: string
+          max_seats?: number
+          updated_at?: string | null
+          used_seats?: number
+        }
+        Update: {
+          id?: string
+          max_seats?: number
+          updated_at?: string | null
+          used_seats?: number
+        }
+        Relationships: []
+      }
       testimonials: {
         Row: {
           attribution_level: string
@@ -501,7 +549,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      are_seats_available: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       application_status: "pending" | "reviewing" | "accepted" | "rejected"
