@@ -9,7 +9,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error?: Error, data?: { user: User | null } }>;
   signOut: () => Promise<void>;
 }
 
@@ -76,10 +76,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           description: "All available seats are taken. Please contact the administrator.",
           variant: "destructive",
         });
-        throw new Error("No seats available");
+        return { error: new Error("No seats available") };
       }
       
-      const { error } = await supabase.auth.signUp({ 
+      const { error, data } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
@@ -95,15 +95,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           description: error.message,
           variant: "destructive",
         });
-        throw error;
+        return { error };
       }
       
-      toast({
-        title: "Registration successful",
-        description: "Welcome to BLKOUTNXT! Please check your email to verify your account.",
-      });
+      return { data };
     } catch (error) {
-      throw error;
+      return { error: error instanceof Error ? error : new Error('Unknown error') };
     }
   };
 

@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export function SignupForm() {
   const [name, setName] = useState('');
@@ -14,6 +16,7 @@ export function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,11 +28,62 @@ export function SignupForm() {
     setIsLoading(true);
     
     try {
-      await signUp(email, password, name);
+      // Sign up the user
+      const { error: signupError, data } = await signUp(email, password, name);
+      
+      if (signupError) throw signupError;
+      
+      // Send welcome email and schedule follow-up survey
+      try {
+        // Send the welcome email
+        const welcomeResponse = await supabase.functions.invoke('send-email', {
+          body: {
+            email,
+            firstName: name.split(' ')[0], // Get first name
+            emailType: 'welcome'
+          }
+        });
+        
+        if (welcomeResponse.error) {
+          console.error('Error sending welcome email:', welcomeResponse.error);
+        }
+        
+        // Schedule a follow-up survey email after 3 days
+        const userId = data?.user?.id;
+        if (userId) {
+          const reminderResponse = await supabase.functions.invoke('schedule-reminder', {
+            body: {
+              email,
+              userId,
+              firstName: name.split(' ')[0],
+              reminderAfterDays: 3
+            }
+          });
+          
+          if (reminderResponse.error) {
+            console.error('Error scheduling survey reminder:', reminderResponse.error);
+          }
+        }
+      } catch (emailError) {
+        // Log but don't block registration if email sending fails
+        console.error('Error in email workflow:', emailError);
+      }
+      
+      // Show success toast
+      toast({
+        title: "Registration successful",
+        description: "Welcome to BLKOUTNXT! Please check your email to verify your account.",
+      });
+      
       // Redirect to login after successful signup
       navigate('/auth/login');
     } catch (error) {
       console.error('Signup error:', error);
+      toast({
+        title: "Registration failed",
+        description: error.message || "There was a problem with your registration. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
