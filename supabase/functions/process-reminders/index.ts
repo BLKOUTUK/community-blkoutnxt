@@ -17,9 +17,9 @@ serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const SENDFOX_API_KEY = Deno.env.get("SENDFOX_API_KEY");
+    const SHOW_API_KEY = Deno.env.get("SHOW_API_KEY");
 
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SENDFOX_API_KEY) {
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SHOW_API_KEY) {
       console.error("Required environment variables are not set");
       return new Response(
         JSON.stringify({ error: "Server configuration error" }),

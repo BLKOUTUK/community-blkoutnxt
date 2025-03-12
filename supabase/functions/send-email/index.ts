@@ -14,13 +14,6 @@ interface SendEmailRequest {
   emailType: "welcome" | "survey" | "reminder";
 }
 
-interface SendFoxContact {
-  email: string;
-  first_name?: string;
-  last_name?: string;
-  lists?: number[];
-}
-
 // Serve the HTTP request
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -29,12 +22,12 @@ serve(async (req) => {
   }
 
   try {
-    const SENDFOX_API_KEY = Deno.env.get("SENDFOX_API_KEY");
+    const SHOW_API_KEY = Deno.env.get("SHOW_API_KEY");
 
-    if (!SENDFOX_API_KEY) {
-      console.error("SendFox API key is not set");
+    if (!SHOW_API_KEY) {
+      console.error("Show API key is not set");
       return new Response(
-        JSON.stringify({ error: "SendFox API key is not configured" }),
+        JSON.stringify({ error: "Show API key is not configured" }),
         { 
           status: 500, 
           headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -56,27 +49,27 @@ serve(async (req) => {
 
     console.log(`Processing ${emailType} email for ${email}`);
 
-    // First make sure the contact exists in SendFox
-    const contactResult = await addOrUpdateContact(SENDFOX_API_KEY, { 
+    // Add contact to Show's audience
+    const contactResult = await addOrUpdateContact(SHOW_API_KEY, { 
       email, 
-      first_name: firstName 
+      firstName
     });
 
     if (!contactResult.success) {
       throw new Error(`Failed to add/update contact: ${contactResult.error}`);
     }
 
-    // Then send the appropriate email based on the type
+    // Send the appropriate email based on the type
     let emailResult;
     switch (emailType) {
       case "welcome":
-        emailResult = await sendWelcomeEmail(SENDFOX_API_KEY, email);
+        emailResult = await sendWelcomeEmail(SHOW_API_KEY, email, firstName);
         break;
       case "survey":
-        emailResult = await sendSurveyEmail(SENDFOX_API_KEY, email);
+        emailResult = await sendSurveyEmail(SHOW_API_KEY, email, firstName);
         break;
       case "reminder":
-        emailResult = await sendReminderEmail(SENDFOX_API_KEY, email);
+        emailResult = await sendReminderEmail(SHOW_API_KEY, email, firstName);
         break;
       default:
         throw new Error(`Invalid email type: ${emailType}`);
@@ -108,30 +101,27 @@ serve(async (req) => {
   }
 });
 
-// Helper function to add or update a contact in SendFox
-async function addOrUpdateContact(apiKey: string, contact: SendFoxContact) {
+// Helper function to add or update a contact in Show
+async function addOrUpdateContact(apiKey: string, contact: { email: string; firstName?: string }) {
   try {
-    console.log(`Adding/updating contact: ${contact.email}`);
+    console.log(`Adding/updating contact in Show: ${contact.email}`);
     
-    const response = await fetch("https://api.sendfox.com/contacts", {
+    const response = await fetch("https://api.showapp.io/contacts", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${apiKey}`
       },
-      body: JSON.stringify(contact),
+      body: JSON.stringify({
+        email: contact.email,
+        first_name: contact.firstName || ""
+      }),
     });
 
     const data = await response.json();
     
     if (!response.ok) {
-      // SendFox may return a 422 if the contact already exists, which is fine
-      if (response.status === 422 && data.message?.includes("already exists")) {
-        console.log(`Contact ${contact.email} already exists`);
-        return { success: true };
-      }
-      
-      console.error("SendFox API error:", data);
+      console.error("Show API error:", data);
       return { 
         success: false, 
         error: data.message || "Unknown error adding contact" 
@@ -149,19 +139,36 @@ async function addOrUpdateContact(apiKey: string, contact: SendFoxContact) {
 }
 
 // Helper function to send a welcome email
-async function sendWelcomeEmail(apiKey: string, email: string) {
+async function sendWelcomeEmail(apiKey: string, email: string, firstName: string) {
   try {
     console.log(`Sending welcome email to: ${email}`);
     
-    // This would use the appropriate SendFox API endpoints
-    // In SendFox, you would typically trigger a pre-created email sequence
-    // or use their API to send a custom email
+    const response = await fetch("https://api.showapp.io/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        to: email,
+        template_id: "welcome-template", // Replace with your actual template ID in Show
+        personalization: {
+          first_name: firstName
+        }
+      }),
+    });
+
+    const data = await response.json();
     
-    // For demo purposes, we're just logging success
-    console.log(`Welcome email would be sent to ${email}`);
+    if (!response.ok) {
+      console.error("Show API error:", data);
+      return { 
+        success: false, 
+        error: data.message || "Unknown error sending welcome email" 
+      };
+    }
     
-    // This should be replaced with the actual API call
-    return { success: true };
+    return { success: true, data };
   } catch (error) {
     console.error("Error sending welcome email:", error);
     return { 
@@ -172,16 +179,36 @@ async function sendWelcomeEmail(apiKey: string, email: string) {
 }
 
 // Helper function to send a survey email
-async function sendSurveyEmail(apiKey: string, email: string) {
+async function sendSurveyEmail(apiKey: string, email: string, firstName: string) {
   try {
     console.log(`Sending survey email to: ${email}`);
     
-    // This would trigger the survey email sequence in SendFox
-    // For demo purposes, we're just logging success
-    console.log(`Survey email would be sent to ${email}`);
+    const response = await fetch("https://api.showapp.io/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        to: email,
+        template_id: "survey-template", // Replace with your actual template ID in Show
+        personalization: {
+          first_name: firstName
+        }
+      }),
+    });
+
+    const data = await response.json();
     
-    // This should be replaced with the actual API call
-    return { success: true };
+    if (!response.ok) {
+      console.error("Show API error:", data);
+      return { 
+        success: false, 
+        error: data.message || "Unknown error sending survey email" 
+      };
+    }
+    
+    return { success: true, data };
   } catch (error) {
     console.error("Error sending survey email:", error);
     return { 
@@ -192,16 +219,36 @@ async function sendSurveyEmail(apiKey: string, email: string) {
 }
 
 // Helper function to send a reminder email
-async function sendReminderEmail(apiKey: string, email: string) {
+async function sendReminderEmail(apiKey: string, email: string, firstName: string) {
   try {
     console.log(`Sending reminder email to: ${email}`);
     
-    // This would trigger the reminder email sequence in SendFox
-    // For demo purposes, we're just logging success
-    console.log(`Reminder email would be sent to ${email}`);
+    const response = await fetch("https://api.showapp.io/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        to: email,
+        template_id: "reminder-template", // Replace with your actual template ID in Show
+        personalization: {
+          first_name: firstName
+        }
+      }),
+    });
+
+    const data = await response.json();
     
-    // This should be replaced with the actual API call
-    return { success: true };
+    if (!response.ok) {
+      console.error("Show API error:", data);
+      return { 
+        success: false, 
+        error: data.message || "Unknown error sending reminder email" 
+      };
+    }
+    
+    return { success: true, data };
   } catch (error) {
     console.error("Error sending reminder email:", error);
     return { 
