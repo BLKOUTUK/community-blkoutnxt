@@ -1,0 +1,374 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BLKOUTNXT Community Survey</title>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      color: #111827;
+      max-width: 650px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      background-color: #f9fafb;
+    }
+    
+    .survey-container {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #4c1d95;
+      margin-top: 0;
+      text-align: center;
+    }
+    
+    .logo {
+      display: block;
+      width: 120px;
+      margin: 0 auto 1.5rem;
+    }
+    
+    .section {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .section:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    
+    .section-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+      color: #1f2937;
+    }
+    
+    .field-group {
+      margin-bottom: 1rem;
+    }
+    
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+    
+    .checkbox-group {
+      margin-top: 0.5rem;
+    }
+    
+    .checkbox-option {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    
+    .checkbox-option input[type="checkbox"] {
+      margin-right: 0.5rem;
+    }
+    
+    .radio-option {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    
+    .radio-option input[type="radio"] {
+      margin-right: 0.5rem;
+    }
+    
+    input[type="text"],
+    input[type="tel"],
+    input[type="email"],
+    textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    
+    .button {
+      display: inline-block;
+      background-color: #7c3aed;
+      color: white;
+      font-weight: 500;
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.375rem;
+      border: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: background-color 0.2s;
+    }
+    
+    .button:hover {
+      background-color: #6d28d9;
+    }
+    
+    .button-container {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+    
+    .membership-section,
+    .meeting-section {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: #f3f4f6;
+      border-radius: 0.375rem;
+    }
+    
+    .special-link {
+      color: #7c3aed;
+      text-decoration: underline;
+      font-weight: 500;
+    }
+    
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="survey-container">
+    <h1>BLKOUTNXT Community Survey</h1>
+    
+    <form id="community-survey" action="/api/submit-survey" method="POST">
+      <!-- User Type Section -->
+      <div class="section">
+        <div class="section-title">Identity and Role</div>
+        <div class="field-group">
+          <label for="userType">How do you identify?</label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="black_queer_man" name="userType" value="black_queer_man">
+              <label for="black_queer_man">Black queer man</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="organizer" name="userType" value="organizer">
+              <label for="organizer">Organizer</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="ally" name="userType" value="ally">
+              <label for="ally">Ally</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="organization" name="userType" value="organization">
+              <label for="organization">Organization</label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Conditional: BLKOUTHUB Membership for Black Queer Men -->
+        <div id="membership-section" class="membership-section">
+          <label>Are you a BLKOUTHUB member?</label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="member_yes" name="isMember" value="yes">
+              <label for="member_yes">Yes</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="member_no" name="isMember" value="no">
+              <label for="member_no">No</label>
+            </div>
+          </div>
+          <div id="membership-link" class="hidden" style="margin-top: 0.5rem;">
+            <p>Interested in becoming a member? <a href="https://blkouthub.com/membership" class="special-link">Learn more about BLKOUTHUB membership</a></p>
+          </div>
+        </div>
+        
+        <!-- Conditional: Meeting Option for Organizers/Organizations -->
+        <div id="meeting-section" class="meeting-section">
+          <label>Would you like to schedule a meeting with our team?</label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="meeting_yes" name="wantsMeeting" value="yes">
+              <label for="meeting_yes">Yes</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="meeting_no" name="wantsMeeting" value="no">
+              <label for="meeting_no">No</label>
+            </div>
+          </div>
+          <div id="meeting-link" class="hidden" style="margin-top: 0.5rem;">
+            <p>You can schedule a meeting using our <a href="https://calendly.com/blkoutnxt/introduction" class="special-link">Calendly link</a></p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Project Interests Section -->
+      <div class="section">
+        <div class="section-title">Project Interests</div>
+        <div class="field-group">
+          <label>Which projects interest you? (select all that apply)</label>
+          <div class="checkbox-group">
+            <div class="checkbox-option">
+              <input type="checkbox" id="coop" name="projectInterests" value="coop">
+              <label for="coop">Co-op Program</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="storylab" name="projectInterests" value="storylab">
+              <label for="storylab">StoryLab</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="channel" name="projectInterests" value="channel">
+              <label for="channel">Channel</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="ivor" name="projectInterests" value="ivor">
+              <label for="ivor">IVOR</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Communication Preferences Section -->
+      <div class="section">
+        <div class="section-title">Communication Preferences</div>
+        <div class="field-group">
+          <label>How would you like to be contacted? (select all that apply)</label>
+          <div class="checkbox-group">
+            <div class="checkbox-option">
+              <input type="checkbox" id="email_contact" name="contactMethods" value="email" checked>
+              <label for="email_contact">Email</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="phone_contact" name="contactMethods" value="phone">
+              <label for="phone_contact">Phone</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="field-group">
+          <label>What topics interest you? (select all that apply)</label>
+          <div class="checkbox-group">
+            <div class="checkbox-option">
+              <input type="checkbox" id="topic_events" name="topics" value="events">
+              <label for="topic_events">Events</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="topic_resources" name="topics" value="resources">
+              <label for="topic_resources">Resources</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="topic_updates" name="topics" value="community_updates">
+              <label for="topic_updates">Community Updates</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="topic_opportunities" name="topics" value="project_opportunities">
+              <label for="topic_opportunities">Project Opportunities</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Contact Information Section -->
+      <div class="section">
+        <div class="section-title">Contact Information</div>
+        <div class="field-group">
+          <label for="phone">Phone Number (optional)</label>
+          <input type="tel" id="phone" name="phone" placeholder="(123) 456-7890">
+        </div>
+      </div>
+      
+      <!-- Open Answer Section -->
+      <div class="section">
+        <div class="section-title">Additional Feedback</div>
+        <div class="field-group">
+          <label for="openAnswer">Is there anything else you'd like to share with us?</label>
+          <textarea id="openAnswer" name="openAnswer" placeholder="Tell us more about what you're looking for or any questions you have..."></textarea>
+        </div>
+      </div>
+      
+      <!-- Submit Button -->
+      <div class="button-container">
+        <button type="submit" class="button">Submit Survey</button>
+      </div>
+    </form>
+  </div>
+  
+  <script>
+    // Show/hide conditional sections based on user type
+    document.querySelectorAll('input[name="userType"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+        // Hide all conditional sections first
+        document.getElementById('membership-section').style.display = 'none';
+        document.getElementById('meeting-section').style.display = 'none';
+        
+        // Show relevant section based on selection
+        if (this.value === 'black_queer_man') {
+          document.getElementById('membership-section').style.display = 'block';
+        } else if (this.value === 'organizer' || this.value === 'organization') {
+          document.getElementById('meeting-section').style.display = 'block';
+        }
+      });
+    });
+    
+    // Show/hide membership link based on selection
+    document.querySelectorAll('input[name="isMember"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+        document.getElementById('membership-link').style.display = 
+          this.value === 'no' ? 'block' : 'none';
+      });
+    });
+    
+    // Show/hide meeting link based on selection
+    document.querySelectorAll('input[name="wantsMeeting"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+        document.getElementById('meeting-link').style.display = 
+          this.value === 'yes' ? 'block' : 'none';
+      });
+    });
+    
+    // Form submission handler
+    document.getElementById('community-survey').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Collect form data
+      const formData = new FormData(this);
+      const surveyData = {};
+      
+      // Convert formData to JSON object
+      for (const [key, value] of formData.entries()) {
+        if (key === 'projectInterests' || key === 'contactMethods' || key === 'topics') {
+          if (!surveyData[key]) surveyData[key] = [];
+          surveyData[key].push(value);
+        } else {
+          surveyData[key] = value;
+        }
+      }
+      
+      // For demonstration purposes, we'll log the data
+      console.log('Survey submission:', surveyData);
+      
+      // Here you would normally send the data to your backend
+      // Using fetch or similar to post to your API endpoint
+      
+      // Show a success message (replace with your own logic)
+      alert('Thank you for completing our survey! Your responses have been recorded.');
+      
+      // Optional: Reset the form
+      this.reset();
+    });
+  </script>
+</body>
+</html>
