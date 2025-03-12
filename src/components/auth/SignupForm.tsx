@@ -8,11 +8,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export function SignupForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [userType, setUserType] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
@@ -21,7 +23,12 @@ export function SignupForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !userType) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
       return;
     }
     
@@ -56,6 +63,7 @@ export function SignupForm() {
               email,
               userId,
               firstName: name.split(' ')[0],
+              userType,
               reminderAfterDays: 3
             }
           });
@@ -112,6 +120,20 @@ export function SignupForm() {
           onChange={(e) => setEmail(e.target.value)}
           required
         />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="userType">How do you identify?</Label>
+        <Select value={userType} onValueChange={setUserType} required>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select how you identify" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="black_queer_man">Black Queer Man</SelectItem>
+            <SelectItem value="organizer">Organizer</SelectItem>
+            <SelectItem value="ally">Ally</SelectItem>
+            <SelectItem value="organization">Organization</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>

@@ -12,6 +12,7 @@ interface ScheduleRequest {
   email: string;
   userId: string;
   firstName: string;
+  userType?: string;
   reminderAfterDays: number;
 }
 
@@ -40,7 +41,7 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // Get the request data
-    const { email, userId, firstName, reminderAfterDays = 3 }: ScheduleRequest = await req.json();
+    const { email, userId, firstName, userType, reminderAfterDays = 3 }: ScheduleRequest = await req.json();
 
     if (!email || !userId) {
       return new Response(
@@ -64,6 +65,7 @@ serve(async (req) => {
           user_id: userId,
           email: email,
           first_name: firstName,
+          user_type: userType,
           reminder_type: 'survey',
           scheduled_for: reminderDate.toISOString(),
           status: 'scheduled'

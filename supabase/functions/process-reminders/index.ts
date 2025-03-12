@@ -78,7 +78,8 @@ serve(async (req) => {
               body: JSON.stringify({
                 email: reminder.email,
                 firstName: reminder.first_name,
-                emailType: reminder.reminder_type
+                emailType: reminder.reminder_type,
+                userType: reminder.user_type
               }),
             }
           );

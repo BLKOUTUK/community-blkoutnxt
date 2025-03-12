@@ -12,6 +12,7 @@ interface SendEmailRequest {
   email: string;
   firstName: string;
   emailType: "welcome" | "survey" | "reminder";
+  userType?: "black_queer_man" | "organizer" | "ally" | "organization";
 }
 
 // Serve the HTTP request
@@ -35,7 +36,7 @@ serve(async (req) => {
       );
     }
 
-    const { email, firstName, emailType }: SendEmailRequest = await req.json();
+    const { email, firstName, emailType, userType }: SendEmailRequest = await req.json();
 
     if (!email) {
       return new Response(
@@ -47,12 +48,13 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Processing ${emailType} email for ${email}`);
+    console.log(`Processing ${emailType} email for ${email}${userType ? ` (${userType})` : ''}`);
 
     // Add contact to Show's audience
     const contactResult = await addOrUpdateContact(SHOW_API_KEY, { 
       email, 
-      firstName
+      firstName,
+      userType
     });
 
     if (!contactResult.success) {
@@ -66,7 +68,7 @@ serve(async (req) => {
         emailResult = await sendWelcomeEmail(SHOW_API_KEY, email, firstName);
         break;
       case "survey":
-        emailResult = await sendSurveyEmail(SHOW_API_KEY, email, firstName);
+        emailResult = await sendSurveyEmail(SHOW_API_KEY, email, firstName, userType);
         break;
       case "reminder":
         emailResult = await sendReminderEmail(SHOW_API_KEY, email, firstName);
@@ -102,9 +104,24 @@ serve(async (req) => {
 });
 
 // Helper function to add or update a contact in Show
-async function addOrUpdateContact(apiKey: string, contact: { email: string; firstName?: string }) {
+async function addOrUpdateContact(apiKey: string, contact: { 
+  email: string; 
+  firstName?: string;
+  userType?: string;
+}) {
   try {
     console.log(`Adding/updating contact in Show: ${contact.email}`);
+    
+    // Prepare the contact data
+    const contactData: Record<string, string> = {
+      email: contact.email,
+      first_name: contact.firstName || ""
+    };
+    
+    // Add user type as a custom field if provided
+    if (contact.userType) {
+      contactData.user_type = contact.userType;
+    }
     
     const response = await fetch("https://api.showapp.io/contacts", {
       method: "POST",
@@ -112,10 +129,7 @@ async function addOrUpdateContact(apiKey: string, contact: { email: string; firs
         "Content-Type": "application/json",
         "Authorization": `Bearer ${apiKey}`
       },
-      body: JSON.stringify({
-        email: contact.email,
-        first_name: contact.firstName || ""
-      }),
+      body: JSON.stringify(contactData),
     });
 
     const data = await response.json();
@@ -178,10 +192,34 @@ async function sendWelcomeEmail(apiKey: string, email: string, firstName: string
   }
 }
 
-// Helper function to send a survey email
-async function sendSurveyEmail(apiKey: string, email: string, firstName: string) {
+// Helper function to send a survey email with personalization based on user type
+async function sendSurveyEmail(apiKey: string, email: string, firstName: string, userType?: string) {
   try {
-    console.log(`Sending survey email to: ${email}`);
+    console.log(`Sending survey email to: ${email} (User type: ${userType || 'not specified'})`);
+    
+    // Base personalization for all user types
+    const personalization: Record<string, any> = {
+      first_name: firstName,
+      survey_link: "https://your-survey-link.com", // Replace with your actual survey link
+      open_question_included: true
+    };
+    
+    // Customize content based on user type
+    if (userType === "black_queer_man") {
+      personalization.membership_question = true;
+      personalization.membership_link = "https://blkouthub.com/membership"; // Replace with actual link
+      personalization.meeting_option = false;
+    } 
+    else if (userType === "organizer" || userType === "organization") {
+      personalization.membership_question = false;
+      personalization.meeting_option = true;
+      personalization.meeting_link = "https://calendly.com/your-meeting-link"; // Replace with actual link
+    }
+    else {
+      // Default for "ally" or unspecified user types
+      personalization.membership_question = false;
+      personalization.meeting_option = false;
+    }
     
     const response = await fetch("https://api.showapp.io/send", {
       method: "POST",
@@ -192,9 +230,7 @@ async function sendSurveyEmail(apiKey: string, email: string, firstName: string)
       body: JSON.stringify({
         to: email,
         template_id: "survey-template", // Replace with your actual template ID in Show
-        personalization: {
-          first_name: firstName
-        }
+        personalization: personalization
       }),
     });
 
