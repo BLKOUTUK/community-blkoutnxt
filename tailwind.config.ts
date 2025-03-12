@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,6 +53,45 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				blkout: {
+					DEFAULT: '#111111',
+					50: '#F5F5F5',
+					100: '#E0E0E0',
+					200: '#C2C2C2',
+					300: '#A3A3A3',
+					400: '#858585',
+					500: '#666666',
+					600: '#474747',
+					700: '#292929',
+					800: '#111111',
+					900: '#000000',
+				},
+				orange: {
+					DEFAULT: '#FF5722',
+					50: '#FFF3EF',
+					100: '#FFE8DF',
+					200: '#FFD0BD',
+					300: '#FFB89C',
+					400: '#FF8A5E',
+					500: '#FF5722',
+					600: '#FD3A00',
+					700: '#CA2E00',
+					800: '#982300',
+					900: '#651700',
+				},
+				purple: {
+					DEFAULT: '#8B5CF6',
+					50: '#F7F3FF',
+					100: '#EDE9FE',
+					200: '#DDD6FE',
+					300: '#C4B5FD',
+					400: '#A78BFA',
+					500: '#8B5CF6',
+					600: '#7C3AED',
+					700: '#6D28D9',
+					800: '#5B21B6',
+					900: '#4C1D95',
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -67,6 +107,10 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			fontFamily: {
+				sans: ['Inter', 'sans-serif'],
+				display: ['Montserrat', 'sans-serif'],
 			},
 			keyframes: {
 				'accordion-down': {
@@ -84,11 +128,27 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'flow': {
+					'0%, 100%': { transform: 'translateY(0) scale(1)' },
+					'50%': { transform: 'translateY(-5px) scale(1.02)' },
+				},
+				'pulse-slow': {
+					'0%, 100%': { opacity: 1 },
+					'50%': { opacity: 0.8 },
+				},
+				'wave': {
+					'0%': { transform: 'translateX(0)' },
+					'50%': { transform: 'translateX(-5%)' },
+					'100%': { transform: 'translateX(0)' },
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'flow': 'flow 6s ease-in-out infinite',
+				'pulse-slow': 'pulse-slow 4s ease-in-out infinite',
+				'wave': 'wave 15s ease-in-out infinite',
 			}
 		}
 	},
