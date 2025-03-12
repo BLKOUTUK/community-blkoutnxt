@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Navbar } from '@/components/Navbar';
 import { CallToAction } from '@/components/CallToAction';
+import { SignupForm } from '@/components/SignupForm';
 
 export default function Index() {
   return (
@@ -48,6 +49,30 @@ export default function Index() {
                     className="object-cover w-full h-full animate-flow" 
                   />
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Signup Section */}
+        <section className="py-12 md:py-16 bg-gradient-to-br from-purple-900 to-blkout-900">
+          <div className="container px-4 md:px-6">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-2">
+                REGISTER NOW
+              </h2>
+              <p className="text-orange-400 text-xl md:text-2xl font-bold">
+                GET BLKOUTNXT IN YOUR INBOX
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div className="flex justify-center">
+                <SignupForm userType="black-queer-men" />
+              </div>
+              
+              <div className="flex justify-center">
+                <SignupForm userType="accomplices-allies" />
               </div>
             </div>
           </div>
