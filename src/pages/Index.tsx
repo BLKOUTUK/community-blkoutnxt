@@ -70,7 +70,7 @@ export default function Index() {
               <iframe 
                 src="/embed/signup-form.html" 
                 width="100%" 
-                height="650" 
+                height="1200" 
                 frameBorder="0"
                 className="max-w-[450px] mx-auto"
                 title="BLKOUTNXT Signup Form"
