@@ -31,19 +31,51 @@ export function SignupForm() {
     
     setIsSubmitting(true);
     
-    // Simulate form submission - this would connect to your Supabase/SendFox in production
-    setTimeout(() => {
+    try {
+      // Create the submission data object
+      const formData = {
+        name,
+        email,
+        user_type: userType,
+        link: link || null,
+        email_consent: emailConsent,
+        created_at: new Date().toISOString(),
+      };
+      
+      // Send the data to the server
+      const response = await fetch('https://api.example.com/subscribers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to submit form');
+      }
+      
       toast({
         title: "Subscription successful!",
         description: "You've been added to our community. Welcome!",
       });
+      
+      // Reset the form
       setName('');
       setEmail('');
       setLink('');
       setUserType('');
       setEmailConsent(false);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: "Submission failed",
+        description: "There was a problem processing your request. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
   
   return (
