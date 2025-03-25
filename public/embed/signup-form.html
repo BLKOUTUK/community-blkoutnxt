@@ -5,12 +5,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BLKOUTNXT Signup</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Inter:wght@400;500;600&display=swap">
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
     
     body {
@@ -21,6 +21,8 @@
       align-items: center;
       min-height: 100vh;
       padding: 1rem;
+      font-family: 'Inter', sans-serif;
+      color: white;
     }
     
     .signup-container {
@@ -28,44 +30,78 @@
       max-width: 450px;
       display: flex;
       flex-direction: column;
-      gap: 2rem;
+      gap: 1.5rem;
     }
     
     .signup-form {
       padding: 2rem;
       border-radius: 1rem;
       width: 100%;
-      color: white;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: linear-gradient(135deg, rgba(76, 29, 149, 0.85) 0%, rgba(124, 58, 237, 0.75) 100%);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(30, 30, 30, 0.85) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .signup-form::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #8B5CF6, #FF5722);
+      z-index: 1;
     }
     
     .form-header {
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.75rem;
+    }
+    
+    .logo {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      letter-spacing: 2px;
+      margin-bottom: 0.5rem;
+      display: inline-block;
+      position: relative;
+    }
+    
+    .logo .highlight {
+      color: #FF5722;
+      position: relative;
     }
     
     .title {
-      font-size: 2rem;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.75rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
       letter-spacing: 0.5px;
+      background: linear-gradient(90deg, #fff, #e0e0e0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     
     .subtitle {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       font-weight: 700;
-      color: #FF5722;
-      margin-bottom: 1rem;
+      color: #8B5CF6;
+      margin-bottom: 0.75rem;
       letter-spacing: 0.5px;
+      font-family: 'Montserrat', sans-serif;
     }
     
     .tagline {
       font-size: 0.85rem;
-      opacity: 0.9;
+      opacity: 0.8;
       letter-spacing: 0.5px;
+      margin-bottom: 1rem;
     }
     
     .form-group {
@@ -75,13 +111,14 @@
     input, select {
       width: 100%;
       padding: 0.9rem 1.25rem;
-      background-color: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      background-color: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 0.5rem;
       color: white;
       font-size: 1rem;
       outline: none;
       transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
     }
     
     select {
@@ -94,12 +131,13 @@
     }
     
     input::placeholder, select::placeholder {
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255, 255, 255, 0.5);
     }
     
     input:focus, select:focus {
-      border-color: rgba(255, 255, 255, 0.5);
-      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+      border-color: rgba(139, 92, 246, 0.5);
+      box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+      background-color: rgba(255, 255, 255, 0.12);
     }
     
     .checkbox-group {
@@ -112,19 +150,20 @@
     .checkbox {
       width: 20px;
       height: 20px;
-      accent-color: #FF5722;
+      accent-color: #8B5CF6;
       margin-top: 0.2rem;
     }
     
     .checkbox-label {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       line-height: 1.4;
+      opacity: 0.9;
     }
     
     .btn-submit {
       width: 100%;
       padding: 0.9rem 1.25rem;
-      background-color: #FF5722;
+      background: linear-gradient(90deg, #8B5CF6, #9333EA);
       color: white;
       border: none;
       border-radius: 0.5rem;
@@ -132,18 +171,25 @@
       font-size: 1.1rem;
       cursor: pointer;
       transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
     }
     
     .btn-submit:hover {
-      background-color: #E64A19;
+      background: linear-gradient(90deg, #9333EA, #8B5CF6);
+      transform: translateY(-2px);
+    }
+    
+    .btn-submit:active {
+      transform: translateY(0);
     }
     
     .success-message {
       display: none;
       text-align: center;
       padding: 1rem;
-      background-color: rgba(34, 197, 94, 0.2);
-      border: 1px solid rgba(34, 197, 94, 0.4);
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
       color: white;
       border-radius: 0.5rem;
       margin-top: 1rem;
@@ -152,28 +198,65 @@
     .hidden {
       display: none;
     }
-
+    
+    .glow {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, rgba(139, 92, 246, 0) 70%);
+      border-radius: 50%;
+      z-index: -1;
+      filter: blur(20px);
+      opacity: 0.6;
+      animation: float 8s infinite ease-in-out;
+    }
+    
+    .glow-1 {
+      top: -100px;
+      right: -50px;
+      animation-delay: 0s;
+    }
+    
+    .glow-2 {
+      bottom: -80px;
+      left: -50px;
+      background: radial-gradient(circle, rgba(255, 87, 34, 0.3) 0%, rgba(255, 87, 34, 0) 70%);
+      animation-delay: -4s;
+    }
+    
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0) scale(1);
+      }
+      50% {
+        transform: translateY(-20px) scale(1.05);
+      }
+    }
+    
     @media (max-width: 768px) {
       .signup-form {
         padding: 1.5rem;
       }
       
       .title {
-        font-size: 1.75rem;
+        font-size: 1.5rem;
       }
       
       .subtitle {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
       }
     }
   </style>
 </head>
 <body>
   <div class="signup-container">
-    <!-- Unified Signup Form -->
     <div class="signup-form">
+      <div class="glow glow-1"></div>
+      <div class="glow glow-2"></div>
+      
       <div class="form-header">
-        <div class="title">GET CONNECTED</div>
+        <div class="logo">BLK<span class="highlight">OUT</span><span class="highlight">NXT</span></div>
+        <h1 class="title">GET CONNECTED</h1>
         <div class="tagline">JOIN THE CONVERSATION • GET MAIL • MEET THE COMMUNITY</div>
       </div>
       
