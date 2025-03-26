@@ -1,69 +1,196 @@
-# Welcome to your Lovable project
+# React + Vite + Supabase Application
 
-## Project info
+A modern web application built with React, Vite, Tailwind CSS, and Supabase.
 
-**URL**: https://lovable.dev/projects/b1a575ed-77a2-43da-8f06-974cf5dcec1b
+## Features
 
-## How can I edit this code?
+- React 18 with TypeScript
+- Vite for fast development and optimized builds
+- Tailwind CSS with Shadcn UI components
+- Supabase for authentication and database
+- React Router for client-side routing
+- React Query for data fetching
+- Form handling with React Hook Form and Zod validation
+- Docker support for containerization
+- CI/CD with GitHub Actions
 
-There are several ways of editing your application.
+## Getting Started
 
-**Use Lovable**
+### Prerequisites
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b1a575ed-77a2-43da-8f06-974cf5dcec1b) and start prompting.
+- Node.js 18+ and npm/yarn/bun
+- Git
 
-Changes made via Lovable will be committed automatically to this repo.
+### Installation
 
-**Use your preferred IDE**
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/your-repo-name.git
+   cd your-repo-name
+   ```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+3. Create a `.env` file based on `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
 
-Follow these steps:
+4. Update the `.env` file with your Supabase credentials.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+5. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## Development
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Available Scripts
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+- `npm run dev` - Start the development server
+- `npm run build` - Build for production
+- `npm run build:dev` - Build for development
+- `npm run build:prod` - Build for production with optimizations
+- `npm run lint` - Run ESLint
+- `npm run preview` - Preview the production build locally
+
+### Docker Development
+
+- `npm run docker:build` - Build the Docker image
+- `npm run docker:run` - Run the Docker container
+- `npm run deploy:docker` - Build and run with Docker Compose
+
+## Deployment Options
+
+### 1. Docker Deployment
+
+Build and run the Docker container:
+
+```bash
+# Build the Docker image
+npm run docker:build
+
+# Run the Docker container
+npm run docker:run
 ```
 
-**Edit a file directly in GitHub**
+Or use Docker Compose:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+npm run deploy:docker
+```
 
-**Use GitHub Codespaces**
+### 2. Digital Ocean Deployment
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+#### Option A: Digital Ocean App Platform
 
-## What technologies are used for this project?
+The simplest way to deploy to Digital Ocean:
 
-This project is built with .
+1. Install Digital Ocean CLI: `brew install doctl` (macOS) or follow [installation instructions](https://docs.digitalocean.com/reference/doctl/how-to/install/)
+2. Authenticate with Digital Ocean: `doctl auth init`
+3. Run the deployment script:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+```bash
+npm run deploy:digitalocean
+```
 
-## How can I deploy this project?
+This will:
+- Create an `app.yaml` configuration file if it doesn't exist
+- Deploy your application to Digital Ocean App Platform
 
-Simply open [Lovable](https://lovable.dev/projects/b1a575ed-77a2-43da-8f06-974cf5dcec1b) and click on Share -> Publish.
+#### Option B: Digital Ocean Droplet with Docker
 
-## I want to use a custom domain - is that possible?
+For more control over your deployment:
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+1. Install Digital Ocean CLI and authenticate as above
+2. Add your SSH key to Digital Ocean
+3. Update the SSH key ID in `scripts/deploy-digitalocean-droplet.sh`
+4. Run the deployment script:
+
+```bash
+npm run deploy:digitalocean-droplet
+```
+
+This will:
+- Create a new Droplet if it doesn't exist
+- Build and deploy your Docker container to the Droplet
+- Set up your application to run on port 80
+
+### 3. AWS Deployment
+
+Deploy to AWS S3 and CloudFront:
+
+1. Configure AWS CLI with your credentials
+2. Update the S3 bucket name and CloudFront distribution ID in `scripts/deploy-aws.sh`
+3. Run the deployment script:
+
+```bash
+npm run deploy:aws
+```
+
+### 4. Netlify Deployment
+
+Deploy to Netlify:
+
+1. Install Netlify CLI: `npm install -g netlify-cli`
+2. Authenticate with Netlify: `netlify login`
+3. Update the site ID in `scripts/deploy-netlify.sh`
+4. Run the deployment script:
+
+```bash
+npm run deploy:netlify
+```
+
+### 4. GitHub Actions CI/CD
+
+The repository includes a GitHub Actions workflow that:
+
+1. Builds and tests the application on every push and pull request
+2. Deploys to production when changes are merged to the main branch
+
+To use GitHub Actions:
+
+1. Add the following secrets to your GitHub repository:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_APP_URL`
+
+2. Update the deployment step in `.github/workflows/ci-cd.yml` with your preferred deployment method.
+
+## Project Structure
+
+```
+├── .github/workflows    # GitHub Actions workflows
+├── public/              # Static assets
+├── scripts/             # Deployment scripts
+├── src/
+│   ├── components/      # React components
+│   ├── contexts/        # React contexts
+│   ├── hooks/           # Custom hooks
+│   ├── integrations/    # Third-party integrations
+│   ├── lib/             # Utility functions
+│   ├── pages/           # Page components
+│   ├── App.tsx          # Main App component
+│   └── main.tsx         # Entry point
+├── supabase/            # Supabase configuration and functions
+├── .env.example         # Example environment variables
+├── docker-compose.yml   # Docker Compose configuration
+├── Dockerfile           # Docker configuration
+├── nginx.conf           # Nginx configuration for Docker
+└── vite.config.ts       # Vite configuration
+```
+
+## Best Practices
+
+- Keep environment variables in `.env` files and never commit them to the repository
+- Use TypeScript for type safety
+- Follow the component structure and naming conventions
+- Write tests for critical functionality
+- Use ESLint for code quality
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

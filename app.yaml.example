@@ -1,0 +1,34 @@
+name: react-vite-app
+static_sites:
+- name: frontend
+  github:
+    branch: main
+    deploy_on_push: true
+    repo: your-username/your-repo-name  # Replace with your GitHub repo
+  build_command: npm run build
+  output_dir: dist
+  environment_slug: node-js
+  env:
+    - key: VITE_SUPABASE_URL
+      scope: RUN_AND_BUILD_TIME
+      value: ${VITE_SUPABASE_URL}
+    - key: VITE_SUPABASE_ANON_KEY
+      scope: RUN_AND_BUILD_TIME
+      value: ${VITE_SUPABASE_ANON_KEY}
+    - key: VITE_APP_URL
+      scope: RUN_AND_BUILD_TIME
+      value: ${VITE_APP_URL}
+  routes:
+  - path: /
+  - path: /api
+    redirect:
+      uri: /
+      status_code: 200
+  - path: /auth
+    redirect:
+      uri: /
+      status_code: 200
+  - path: /dashboard
+    redirect:
+      uri: /
+      status_code: 200

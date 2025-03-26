@@ -14,6 +14,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CallToAction } from '@/components/CallToAction';
+import { CampaignIntegration } from '@/components/CampaignIntegration';
+import { Link } from 'react-router-dom';
 
 // Example testimonial data
 const testimonials: TestimonialType[] = [
@@ -99,6 +101,24 @@ export default function Dashboard() {
             change={5}
             icon={<UserIcon className="h-5 w-5" />}
           />
+        </div>
+        
+        {/* Active Campaigns Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Active Campaigns</h2>
+            <Button variant="link" asChild>
+              <Link to="/campaigns" className="flex items-center gap-1">
+                View all campaigns
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
+              </Link>
+            </Button>
+          </div>
+          
+          <CampaignIntegration variant="minimal" showTabs={false} />
         </div>
         
         <Tabs defaultValue="community">
@@ -255,6 +275,12 @@ export default function Dashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+        
+        {/* Featured Campaign */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Featured Campaign</h2>
+          <CampaignIntegration variant="featured" showTabs={false} />
+        </div>
       </div>
     </DashboardLayout>
   );
