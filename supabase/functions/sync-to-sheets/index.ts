@@ -6,6 +6,15 @@ const SHEET_NAME = 'CommunityMembers'
 
 // Get access token using OAuth 2.0 client credentials
 async function getAccessToken() {
+  const clientId = Deno.env.get('GOOGLE_CLIENT_ID')
+  const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET')
+
+  if (!clientId || !clientSecret) {
+    throw new Error(`Missing OAuth credentials. Client ID: ${!!clientId}, Client Secret: ${!!clientSecret}`)
+  }
+
+  console.log('Attempting to get access token...')
+  
   const response = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: {
@@ -13,15 +22,16 @@ async function getAccessToken() {
     },
     body: new URLSearchParams({
       grant_type: 'client_credentials',
-      client_id: Deno.env.get('GOOGLE_CLIENT_ID') || '',
-      client_secret: Deno.env.get('GOOGLE_CLIENT_SECRET') || '',
+      client_id: clientId,
+      client_secret: clientSecret,
       scope: 'https://www.googleapis.com/auth/spreadsheets'
     })
   })
 
   if (!response.ok) {
     const error = await response.json()
-    throw new Error(`Failed to get access token: ${error.message}`)
+    console.error('OAuth error:', error)
+    throw new Error(`Failed to get access token: ${error.message || error.error_description || 'Unknown error'}`)
   }
 
   const data = await response.json()
