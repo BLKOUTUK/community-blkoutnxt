@@ -4,6 +4,30 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const SPREADSHEET_ID = '16sqPMjCkdmoxV-gOW0yPyBJCAF55n69_12Sx2X_8-iE'
 const SHEET_NAME = 'CommunityMembers'
 
+// Get access token using OAuth 2.0 client credentials
+async function getAccessToken() {
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: Deno.env.get('GOOGLE_CLIENT_ID') || '',
+      client_secret: Deno.env.get('GOOGLE_CLIENT_SECRET') || '',
+      scope: 'https://www.googleapis.com/auth/spreadsheets'
+    })
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(`Failed to get access token: ${error.message}`)
+  }
+
+  const data = await response.json()
+  return data.access_token
+}
+
 serve(async (req) => {
   try {
     // Initialize Supabase client
@@ -36,12 +60,16 @@ serve(async (req) => {
       contact.status
     ])
 
+    // Get access token
+    const accessToken = await getAccessToken()
+
     // Update Google Sheet
     const response = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}:clear`,
       {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({})
@@ -49,7 +77,8 @@ serve(async (req) => {
     )
 
     if (!response.ok) {
-      throw new Error('Failed to clear sheet')
+      const error = await response.json()
+      throw new Error(`Failed to clear sheet: ${error.message}`)
     }
 
     // Append new data
@@ -58,6 +87,7 @@ serve(async (req) => {
       {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -70,7 +100,8 @@ serve(async (req) => {
     )
 
     if (!appendResponse.ok) {
-      throw new Error('Failed to append data')
+      const error = await appendResponse.json()
+      throw new Error(`Failed to append data: ${error.message}`)
     }
 
     return new Response(
