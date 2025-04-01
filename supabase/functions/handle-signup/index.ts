@@ -7,117 +7,100 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-// Google Sheets API helper function
-async function appendToGoogleSheet(values: any[]) {
-  const SPREADSHEET_ID = '16sqPMjCkdmoxV-gOW0yPyBJCAF55n69_12Sx2X_8-iE'
-  const SHEET_NAME = 'CommunityMembers'
-  
-  // Get access token using secure method
-  const accessToken = await getAccessToken()
-  
-  const response = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}:append?valueInputOption=USER_ENTERED`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        values: [values]
-      })
-    }
-  )
-
-  if (!response.ok) {
-    const error = await response.json()
-    console.error('Google Sheets API error:', error)
-    throw new Error(`Failed to append to Google Sheet: ${error.message}`)
-  }
-
-  return response.json()
-}
-
-// Get access token using secure method
-async function getAccessToken() {
-  const response = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
-      grant_type: 'client_credentials',
-      client_id: Deno.env.get('GOOGLE_CLIENT_ID') || '',
-      client_secret: Deno.env.get('GOOGLE_CLIENT_SECRET') || '',
-      scope: 'https://www.googleapis.com/auth/spreadsheets'
-    })
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(`Failed to get access token: ${error.message}`)
-  }
-
-  const data = await response.json()
-  return data.access_token
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { name, email, userType, organisation } = await req.json()
+    // Log the request body
+    const body = await req.json()
+    console.log('Raw request body:', body)
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()))
+    
+    const { name, email, userType, organisation } = body
+    console.log('Extracted fields:', { name, email, userType, organisation })
+
+    // Validate required fields
+    if (!name || !email || !userType) {
+      console.error('Missing fields:', { name, email, userType })
+      throw new Error('Missing required fields: name, email, or userType')
+    }
+
     const SENDFOX_API_KEY = Deno.env.get('SENDFOX_API_KEY')
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
     if (!SENDFOX_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Missing environment variables:', {
+        hasSendFoxKey: !!SENDFOX_API_KEY,
+        hasSupabaseUrl: !!SUPABASE_URL,
+        hasServiceKey: !!SUPABASE_SERVICE_ROLE_KEY
+      })
       throw new Error('Missing required environment variables')
     }
 
     // Initialize Supabase client
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
-    // 1. Create contact in Supabase
-    const { data: contact, error: supabaseError } = await supabase
+    // 1. Check if contact exists
+    const { data: existingContact, error: checkError } = await supabase
       .from('contacts')
-      .insert([
-        {
-          name,
-          email,
-          role: userType,
-          organisation,
-          status: 'initial_signup',
-          created_at: new Date().toISOString(),
-        },
-      ])
       .select()
+      .eq('email', email)
       .single()
 
-    if (supabaseError) {
-      console.error('Supabase error:', supabaseError)
-      throw supabaseError
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+      console.error('Error checking existing contact:', checkError)
+      throw new Error(`Error checking existing contact: ${checkError.message}`)
     }
 
-    // 2. Store in Google Sheets (with error handling)
-    try {
-      const sheetValues = [
-        new Date().toISOString(),
-        name,
-        email,
-        userType,
-        organisation || '',
-        'Initial Signup'
-      ]
-      await appendToGoogleSheet(sheetValues)
-    } catch (sheetsError) {
-      console.error('Google Sheets error:', sheetsError)
-      // Continue with the flow even if Google Sheets fails
+    let contact
+    if (existingContact) {
+      // Update existing contact
+      const { data: updatedContact, error: updateError } = await supabase
+        .from('contacts')
+        .update({
+          name,
+          role: userType,
+          organisation,
+          status: 'updated',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('email', email)
+        .select()
+        .single()
+
+      if (updateError) {
+        console.error('Error updating contact:', updateError)
+        throw new Error(`Error updating contact: ${updateError.message}`)
+      }
+      contact = updatedContact
+    } else {
+      // Create new contact
+      const { data: newContact, error: insertError } = await supabase
+        .from('contacts')
+        .insert([
+          {
+            name,
+            email,
+            role: userType,
+            organisation,
+            status: 'initial_signup',
+            created_at: new Date().toISOString(),
+          },
+        ])
+        .select()
+        .single()
+
+      if (insertError) {
+        console.error('Error creating contact:', insertError)
+        throw new Error(`Error creating contact: ${insertError.message}`)
+      }
+      contact = newContact
     }
 
-    // 3. Create contact in SendFox
+    // 2. Create/Update contact in SendFox
     const contactResponse = await fetch('https://api.sendfox.com/contacts', {
       method: 'POST',
       headers: {
@@ -129,24 +112,40 @@ serve(async (req) => {
         first_name: name,
         custom_fields: {
           user_type: userType,
-          organisation: organisation
+          organisation: organisation,
+          signup_date: new Date().toISOString()
         },
-        category: userType // This will trigger the appropriate SendFox automation
+        category: userType,
+        // Add to the appropriate list based on user type
+        lists: [{
+          name: userType === 'black_queer_man' ? 'BLKOUT NXT BQM' :
+                userType === 'ally' ? 'BLKOUT NXT ALLY' :
+                userType === 'organization' ? 'BLKOUT NXT ORGANISATION' :
+                'BLKOUT NXT ORGANISER'
+        }],
+        // This will trigger SendFox's automation for new contacts
+        automation: existingContact ? undefined : {
+          name: userType === 'black_queer_man' ? "BQM Welcome Series" :
+                userType === 'ally' ? "Ally Welcome Series" :
+                userType === 'organization' ? "Organization Welcome Series" :
+                "Organiser Welcome Series",
+          trigger: "on_add"
+        }
       }),
     })
 
     if (!contactResponse.ok) {
       const error = await contactResponse.json()
       console.error('SendFox contact error:', error)
-      throw new Error(`Failed to create contact in SendFox: ${error.message}`)
+      throw new Error(`SendFox error: ${error.message || 'Failed to create contact'}`)
     }
 
-    // 4. Log the successful operations
+    // 3. Log the successful operations
     await supabase
       .from('email_logs')
       .insert([
         {
-          email_type: 'welcome',
+          email_type: existingContact ? 'update' : 'welcome',
           sent_at: new Date().toISOString(),
           status: 'success',
           user_type: userType
@@ -154,7 +153,10 @@ serve(async (req) => {
       ])
 
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ 
+        success: true,
+        message: existingContact ? 'Contact updated successfully' : 'Contact created successfully'
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
@@ -163,7 +165,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in handle-signup:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 
