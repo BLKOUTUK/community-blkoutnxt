@@ -18,6 +18,13 @@ import {
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -26,17 +33,14 @@ const formSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
-  password: z.string().min(8, {
-    message: "Password must be at least 8 characters.",
+  userType: z.string({
+    required_error: "Please select your role.",
   }),
-  confirmPassword: z.string(),
+  organisation: z.string().optional(),
   terms: z.boolean().refine(val => val === true, {
     message: "You must agree to the terms and conditions.",
   }),
   newsletter: z.boolean().optional(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -57,8 +61,8 @@ export function SignupForm({ redirectTo = '/dashboard', compact = false }: Signu
     defaultValues: {
       name: "",
       email: "",
-      password: "",
-      confirmPassword: "",
+      userType: "",
+      organisation: "",
       terms: false,
       newsletter: true,
     },
@@ -67,14 +71,25 @@ export function SignupForm({ redirectTo = '/dashboard', compact = false }: Signu
   async function onSubmit(values: FormValues) {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      await signUp({
-        name: values.name,
-        email: values.email,
-        password: values.password,
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/handle-signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email,
+          userType: values.userType,
+          organisation: values.organisation,
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to create account');
+      }
+
+      const data = await response.json();
       
       toast({
         title: "Account created!",
@@ -83,6 +98,7 @@ export function SignupForm({ redirectTo = '/dashboard', compact = false }: Signu
       
       navigate(redirectTo);
     } catch (error) {
+      console.error('Signup error:', error);
       toast({
         title: "Error",
         description: "There was a problem creating your account. Please try again.",
@@ -131,36 +147,44 @@ export function SignupForm({ redirectTo = '/dashboard', compact = false }: Signu
                 </FormItem>
               )}
             />
-            
-            <div className="grid gap-6 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
+
+            <FormField
+              control={form.control}
+              name="userType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>I am a</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <Input type="password" placeholder="Create a password" {...field} />
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your role" />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="Confirm your password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                    <SelectContent>
+                      <SelectItem value="black_queer_man">Black Queer Man</SelectItem>
+                      <SelectItem value="ally">Ally</SelectItem>
+                      <SelectItem value="organizer">Organiser</SelectItem>
+                      <SelectItem value="organization">Organization</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="organisation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Organization (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your organization name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             
             <FormField
               control={form.control}

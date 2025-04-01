@@ -1,7 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const SPREADSHEET_ID = '16sqPMjCkdmoxV-gOW0yPyBJCAF55n69_12Sx2X_8-iE'
+const SPREADSHEET_ID = Deno.env.get('GOOGLE_SHEET_ID')
 const SHEET_NAME = 'CommunityMembers'
 
 serve(async (req) => {
@@ -36,57 +36,39 @@ serve(async (req) => {
       contact.status
     ])
 
-    // Get access token from environment
-    const accessToken = Deno.env.get('GOOGLE_ACCESS_TOKEN')
-    if (!accessToken) {
-      throw new Error('Missing Google access token')
+    // Trigger GitHub Actions workflow
+    const githubToken = Deno.env.get('GITHUB_TOKEN')
+    if (!githubToken) {
+      throw new Error('Missing GitHub token')
     }
 
-    // Update Google Sheet
-    const response = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}:clear`,
+    const workflowResponse = await fetch(
+      'https://api.github.com/repos/BLKOUTUK/community-blkoutnxt/actions/workflows/sheets-sync.yml/dispatches',
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({})
-      }
-    )
-
-    if (!response.ok) {
-      const error = await response.json()
-      console.error('Google Sheets API error:', error)
-      throw new Error(`Failed to clear sheet: ${JSON.stringify(error)}`)
-    }
-
-    // Append new data
-    const appendResponse = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}:append?valueInputOption=USER_ENTERED`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': `token ${githubToken}`,
+          'Accept': 'application/vnd.github.v3+json',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          values: [
-            ['Timestamp', 'Name', 'Email', 'Role', 'Organisation', 'Status'],
-            ...values
-          ]
+          ref: 'main',
+          inputs: {
+            spreadsheet_id: SPREADSHEET_ID,
+            data: JSON.stringify(values)
+          }
         })
       }
     )
 
-    if (!appendResponse.ok) {
-      const error = await appendResponse.json()
-      console.error('Google Sheets API error:', error)
-      throw new Error(`Failed to append data: ${JSON.stringify(error)}`)
+    if (!workflowResponse.ok) {
+      const error = await workflowResponse.json()
+      console.error('GitHub API error:', error)
+      throw new Error(`Failed to trigger workflow: ${JSON.stringify(error)}`)
     }
 
     return new Response(
-      JSON.stringify({ success: true, message: `Synced ${values.length} records` }),
+      JSON.stringify({ success: true, message: `Triggered sync for ${values.length} records` }),
       { headers: { 'Content-Type': 'application/json' } }
     )
   } catch (error) {
