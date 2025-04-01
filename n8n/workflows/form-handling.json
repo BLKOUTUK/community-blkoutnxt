@@ -1,0 +1,114 @@
+{
+  "name": "Form Handling Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "form-submission",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "contacts",
+        "columns": {
+          "name": "={{$json.name}}",
+          "email": "={{$json.email}}",
+          "role": "={{$json.userType}}",
+          "organisation": "={{$json.organisation}}",
+          "status": "initial_signup",
+          "created_at": "={{$now}}"
+        }
+      },
+      "name": "Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "record",
+        "table": "CommunityMembers",
+        "columns": {
+          "Name": "={{$json.name}}",
+          "Email": "={{$json.email}}",
+          "Role": "={{$json.userType}}",
+          "Organisation": "={{$json.organisation}}",
+          "Status": "Initial Signup",
+          "CreatedAt": "={{$now}}"
+        }
+      },
+      "name": "Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 1,
+      "position": [
+        650,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "apiKey",
+        "apiKey": "={{$env.SENDFOX_API_KEY}}",
+        "resource": "contact",
+        "email": "={{$json.email}}",
+        "firstName": "={{$json.name}}",
+        "customFields": {
+          "user_type": "={{$json.userType}}"
+        }
+      },
+      "name": "SendFox",
+      "type": "n8n-nodes-base.sendfox",
+      "typeVersion": 1,
+      "position": [
+        850,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "main": [
+        [
+          {
+            "node": "Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable": {
+      "main": [
+        [
+          {
+            "node": "SendFox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+} 

@@ -1,15 +1,16 @@
-# React + Vite + Supabase Application
+# BLKOUTNXT Community Platform
 
-A modern web application built with React, Vite, Tailwind CSS, and Supabase.
+A modern web application for the BLKOUTNXT community, built with React, Vite, and Supabase. This platform serves as a central hub for black queer men, allies, and organisations to connect and engage with the community.
 
 ## Features
 
-- React 18 with TypeScript
+- Modern React 18 with TypeScript for type safety
 - Vite for fast development and optimized builds
-- Tailwind CSS with Shadcn UI components
-- Supabase for authentication and database
+- Tailwind CSS with Shadcn UI components for beautiful, accessible interfaces
+- Supabase for authentication, database, and serverless functions
+- SendFox integration for email communications and automations
 - React Router for client-side routing
-- React Query for data fetching
+- React Query for efficient data fetching
 - Form handling with React Hook Form and Zod validation
 - Docker support for containerization
 - CI/CD with GitHub Actions
@@ -20,13 +21,14 @@ A modern web application built with React, Vite, Tailwind CSS, and Supabase.
 
 - Node.js 18+ and npm/yarn/bun
 - Git
+- Supabase CLI (for local development)
 
 ### Installation
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/your-repo-name.git
-   cd your-repo-name
+   git clone https://github.com/BLKOUTUK/community-blkoutnxt.git
+   cd community-blkoutnxt
    ```
 
 2. Install dependencies:
@@ -39,7 +41,11 @@ A modern web application built with React, Vite, Tailwind CSS, and Supabase.
    cp .env.example .env
    ```
 
-4. Update the `.env` file with your Supabase credentials.
+4. Update the `.env` file with your Supabase credentials:
+   ```
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
 
 5. Start the development server:
    ```bash
@@ -57,115 +63,41 @@ A modern web application built with React, Vite, Tailwind CSS, and Supabase.
 - `npm run lint` - Run ESLint
 - `npm run preview` - Preview the production build locally
 
-### Docker Development
+### Supabase Functions
 
-- `npm run docker:build` - Build the Docker image
-- `npm run docker:run` - Run the Docker container
-- `npm run deploy:docker` - Build and run with Docker Compose
+The project includes several Supabase Edge Functions:
 
-## Deployment Options
+- `handle-signup`: Manages user signup process and SendFox integration
+- `send-email`: Handles email communications
+- `sync-to-sheets`: Syncs data with Google Sheets
 
-### 1. Docker Deployment
-
-Build and run the Docker container:
-
+To deploy functions:
 ```bash
-# Build the Docker image
-npm run docker:build
-
-# Run the Docker container
-npm run docker:run
+supabase functions deploy <function-name>
 ```
 
-Or use Docker Compose:
+## Deployment
 
-```bash
-npm run deploy:docker
-```
+The application can be deployed to various platforms. See the following guides for detailed instructions:
 
-### 2. Digital Ocean Deployment
+- [Docker Deployment](deployment-docker.md)
+- [Digital Ocean Deployment](deployment-digitalocean.md)
+- [AWS Deployment](deployment-aws.md)
+- [Netlify Deployment](deployment-netlify.md)
 
-#### Option A: Digital Ocean App Platform
+### Quick Deployment Scripts
 
-The simplest way to deploy to Digital Ocean:
-
-1. Install Digital Ocean CLI: `brew install doctl` (macOS) or follow [installation instructions](https://docs.digitalocean.com/reference/doctl/how-to/install/)
-2. Authenticate with Digital Ocean: `doctl auth init`
-3. Run the deployment script:
-
-```bash
-npm run deploy:digitalocean
-```
-
-This will:
-- Create an `app.yaml` configuration file if it doesn't exist
-- Deploy your application to Digital Ocean App Platform
-
-#### Option B: Digital Ocean Droplet with Docker
-
-For more control over your deployment:
-
-1. Install Digital Ocean CLI and authenticate as above
-2. Add your SSH key to Digital Ocean
-3. Update the SSH key ID in `scripts/deploy-digitalocean-droplet.sh`
-4. Run the deployment script:
-
-```bash
-npm run deploy:digitalocean-droplet
-```
-
-This will:
-- Create a new Droplet if it doesn't exist
-- Build and deploy your Docker container to the Droplet
-- Set up your application to run on port 80
-
-### 3. AWS Deployment
-
-Deploy to AWS S3 and CloudFront:
-
-1. Configure AWS CLI with your credentials
-2. Update the S3 bucket name and CloudFront distribution ID in `scripts/deploy-aws.sh`
-3. Run the deployment script:
-
-```bash
-npm run deploy:aws
-```
-
-### 4. Netlify Deployment
-
-Deploy to Netlify:
-
-1. Install Netlify CLI: `npm install -g netlify-cli`
-2. Authenticate with Netlify: `netlify login`
-3. Update the site ID in `scripts/deploy-netlify.sh`
-4. Run the deployment script:
-
-```bash
-npm run deploy:netlify
-```
-
-### 4. GitHub Actions CI/CD
-
-The repository includes a GitHub Actions workflow that:
-
-1. Builds and tests the application on every push and pull request
-2. Deploys to production when changes are merged to the main branch
-
-To use GitHub Actions:
-
-1. Add the following secrets to your GitHub repository:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-   - `VITE_APP_URL`
-
-2. Update the deployment step in `.github/workflows/ci-cd.yml` with your preferred deployment method.
+- `npm run deploy:docker` - Deploy using Docker Compose
+- `npm run deploy:digitalocean` - Deploy to Digital Ocean App Platform
+- `npm run deploy:aws` - Deploy to AWS S3 and CloudFront
+- `npm run deploy:netlify` - Deploy to Netlify
 
 ## Project Structure
 
 ```
 ├── .github/workflows    # GitHub Actions workflows
 ├── public/              # Static assets
-├── scripts/             # Deployment scripts
+├── scripts/             # Deployment and utility scripts
 ├── src/
 │   ├── components/      # React components
 │   ├── contexts/        # React contexts
@@ -176,21 +108,22 @@ To use GitHub Actions:
 │   ├── App.tsx          # Main App component
 │   └── main.tsx         # Entry point
 ├── supabase/            # Supabase configuration and functions
+│   ├── functions/       # Edge functions
+│   └── migrations/      # Database migrations
 ├── .env.example         # Example environment variables
 ├── docker-compose.yml   # Docker Compose configuration
 ├── Dockerfile           # Docker configuration
-├── nginx.conf           # Nginx configuration for Docker
 └── vite.config.ts       # Vite configuration
 ```
 
-## Best Practices
+## Contributing
 
-- Keep environment variables in `.env` files and never commit them to the repository
-- Use TypeScript for type safety
-- Follow the component structure and naming conventions
-- Write tests for critical functionality
-- Use ESLint for code quality
+Please read our contributing guidelines and follow the code of conduct. We welcome contributions from the community!
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For support, please contact the BLKOUTNXT team or open an issue in the GitHub repository.

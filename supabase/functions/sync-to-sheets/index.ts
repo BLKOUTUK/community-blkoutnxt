@@ -4,40 +4,6 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const SPREADSHEET_ID = '16sqPMjCkdmoxV-gOW0yPyBJCAF55n69_12Sx2X_8-iE'
 const SHEET_NAME = 'CommunityMembers'
 
-// Get access token using OAuth 2.0 client credentials
-async function getAccessToken() {
-  const clientId = Deno.env.get('GOOGLE_CLIENT_ID')
-  const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET')
-
-  if (!clientId || !clientSecret) {
-    throw new Error(`Missing OAuth credentials. Client ID: ${!!clientId}, Client Secret: ${!!clientSecret}`)
-  }
-
-  console.log('Attempting to get access token...')
-  
-  const response = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
-      grant_type: 'client_credentials',
-      client_id: clientId,
-      client_secret: clientSecret,
-      scope: 'https://www.googleapis.com/auth/spreadsheets'
-    })
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    console.error('OAuth error:', error)
-    throw new Error(`Failed to get access token: ${error.message || error.error_description || 'Unknown error'}`)
-  }
-
-  const data = await response.json()
-  return data.access_token
-}
-
 serve(async (req) => {
   try {
     // Initialize Supabase client
@@ -70,8 +36,11 @@ serve(async (req) => {
       contact.status
     ])
 
-    // Get access token
-    const accessToken = await getAccessToken()
+    // Get access token from environment
+    const accessToken = Deno.env.get('GOOGLE_ACCESS_TOKEN')
+    if (!accessToken) {
+      throw new Error('Missing Google access token')
+    }
 
     // Update Google Sheet
     const response = await fetch(
@@ -88,7 +57,8 @@ serve(async (req) => {
 
     if (!response.ok) {
       const error = await response.json()
-      throw new Error(`Failed to clear sheet: ${error.message}`)
+      console.error('Google Sheets API error:', error)
+      throw new Error(`Failed to clear sheet: ${JSON.stringify(error)}`)
     }
 
     // Append new data
@@ -111,7 +81,8 @@ serve(async (req) => {
 
     if (!appendResponse.ok) {
       const error = await appendResponse.json()
-      throw new Error(`Failed to append data: ${error.message}`)
+      console.error('Google Sheets API error:', error)
+      throw new Error(`Failed to append data: ${JSON.stringify(error)}`)
     }
 
     return new Response(

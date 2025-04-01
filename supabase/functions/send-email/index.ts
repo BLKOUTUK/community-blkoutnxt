@@ -1,10 +1,11 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Define the headers for CORS
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "http://localhost:8080",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Max-Age": "86400",
 };
 
 // Define interfaces for our requests
@@ -19,16 +20,19 @@ interface SendEmailRequest {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 204
+    });
   }
 
   try {
-    const SHOW_API_KEY = Deno.env.get("SHOW_API_KEY");
+    const SENDFOX_API_KEY = Deno.env.get("SENDFOX_API_KEY");
 
-    if (!SHOW_API_KEY) {
-      console.error("Show API key is not set");
+    if (!SENDFOX_API_KEY) {
+      console.error("SendFox API key is not set");
       return new Response(
-        JSON.stringify({ error: "Show API key is not configured" }),
+        JSON.stringify({ error: "SendFox API key is not configured" }),
         { 
           status: 500, 
           headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -50,8 +54,8 @@ serve(async (req) => {
 
     console.log(`Processing ${emailType} email for ${email}${userType ? ` (${userType})` : ''}`);
 
-    // Add contact to Show's audience
-    const contactResult = await addOrUpdateContact(SHOW_API_KEY, { 
+    // Add contact to SendFox's audience
+    const contactResult = await addOrUpdateContact(SENDFOX_API_KEY, { 
       email, 
       firstName,
       userType
@@ -65,13 +69,13 @@ serve(async (req) => {
     let emailResult;
     switch (emailType) {
       case "welcome":
-        emailResult = await sendWelcomeEmail(SHOW_API_KEY, email, firstName);
+        emailResult = await sendWelcomeEmail(SENDFOX_API_KEY, email, firstName, userType);
         break;
       case "survey":
-        emailResult = await sendSurveyEmail(SHOW_API_KEY, email, firstName, userType);
+        emailResult = await sendSurveyEmail(SENDFOX_API_KEY, email, firstName, userType);
         break;
       case "reminder":
-        emailResult = await sendReminderEmail(SHOW_API_KEY, email, firstName);
+        emailResult = await sendReminderEmail(SENDFOX_API_KEY, email, firstName);
         break;
       default:
         throw new Error(`Invalid email type: ${emailType}`);
@@ -103,14 +107,14 @@ serve(async (req) => {
   }
 });
 
-// Helper function to add or update a contact in Show
+// Helper function to add or update a contact in SendFox
 async function addOrUpdateContact(apiKey: string, contact: { 
   email: string; 
   firstName?: string;
   userType?: string;
 }) {
   try {
-    console.log(`Adding/updating contact in Show: ${contact.email}`);
+    console.log(`Adding/updating contact in SendFox: ${contact.email}`);
     
     // Prepare the contact data
     const contactData: Record<string, string> = {
@@ -123,7 +127,7 @@ async function addOrUpdateContact(apiKey: string, contact: {
       contactData.user_type = contact.userType;
     }
     
-    const response = await fetch("https://api.showapp.io/contacts", {
+    const response = await fetch("https://api.sendfox.com/contacts", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -135,7 +139,7 @@ async function addOrUpdateContact(apiKey: string, contact: {
     const data = await response.json();
     
     if (!response.ok) {
-      console.error("Show API error:", data);
+      console.error("SendFox API error:", data);
       return { 
         success: false, 
         error: data.message || "Unknown error adding contact" 
@@ -153,11 +157,98 @@ async function addOrUpdateContact(apiKey: string, contact: {
 }
 
 // Helper function to send a welcome email
-async function sendWelcomeEmail(apiKey: string, email: string, firstName: string) {
+async function sendWelcomeEmail(apiKey: string, email: string, firstName: string, userType?: string) {
   try {
-    console.log(`Sending welcome email to: ${email}`);
+    console.log(`Sending welcome email to: ${email} (User type: ${userType || 'not specified'})`);
     
-    const response = await fetch("https://api.showapp.io/send", {
+    // Define welcome email content based on user type
+    let welcomeContent = '';
+    let subject = '';
+    
+    switch (userType) {
+      case "black_queer_man":
+        subject = "Welcome to BLKOUTNXT - Your Space to Thrive";
+        welcomeContent = `
+          <h1>Welcome to BLKOUTNXT, ${firstName}!</h1>
+          <p>We're thrilled to have you join our community of Black Queer Men. This is your space to connect, grow, and thrive.</p>
+          <p>As a Black Queer Man, you have access to:</p>
+          <ul>
+            <li>Exclusive membership benefits</li>
+            <li>Safe spaces for authentic conversations</li>
+            <li>Community events and gatherings</li>
+            <li>Professional development opportunities</li>
+          </ul>
+          <p>To get started, please complete your profile:</p>
+          <a href="${Deno.env.get("APP_URL")}/complete-profile?email=${encodeURIComponent(email)}">Complete Your Profile</a>
+          <p>We look forward to having you as part of our community!</p>
+        `;
+        break;
+        
+      case "ally":
+        subject = "Welcome to BLKOUTNXT - Join Us in Building Community";
+        welcomeContent = `
+          <h1>Welcome to BLKOUTNXT, ${firstName}!</h1>
+          <p>Thank you for joining us as an Ally/Accomplice. Your support is invaluable in building a stronger, more inclusive community.</p>
+          <p>As an Ally, you can:</p>
+          <ul>
+            <li>Learn about our community's needs and aspirations</li>
+            <li>Participate in allyship training and workshops</li>
+            <li>Support community initiatives</li>
+            <li>Connect with other allies and community members</li>
+          </ul>
+          <p>To get started, please complete your profile:</p>
+          <a href="${Deno.env.get("APP_URL")}/complete-profile?email=${encodeURIComponent(email)}">Complete Your Profile</a>
+          <p>Together, we can create positive change!</p>
+        `;
+        break;
+        
+      case "organizer":
+        subject = "Welcome to BLKOUTNXT - Let's Create Impact Together";
+        welcomeContent = `
+          <h1>Welcome to BLKOUTNXT, ${firstName}!</h1>
+          <p>We're excited to have you join us as an Organizer. Your experience and leadership will help shape our community's future.</p>
+          <p>As an Organizer, you have access to:</p>
+          <ul>
+            <li>Organizer-specific resources and tools</li>
+            <li>Networking opportunities with other organizers</li>
+            <li>Event planning support</li>
+            <li>Community engagement initiatives</li>
+          </ul>
+          <p>To get started, please complete your profile:</p>
+          <a href="${Deno.env.get("APP_URL")}/complete-profile?email=${encodeURIComponent(email)}">Complete Your Profile</a>
+          <p>Let's work together to create meaningful impact!</p>
+        `;
+        break;
+        
+      case "organization":
+        subject = "Welcome to BLKOUTNXT - Partnering for Community Impact";
+        welcomeContent = `
+          <h1>Welcome to BLKOUTNXT, ${firstName}!</h1>
+          <p>Thank you for joining us as an Organization. We're excited to collaborate and create lasting impact together.</p>
+          <p>As an Organization, you can:</p>
+          <ul>
+            <li>Access partnership opportunities</li>
+            <li>Participate in community initiatives</li>
+            <li>Share resources and expertise</li>
+            <li>Connect with other organizations and community members</li>
+          </ul>
+          <p>To get started, please complete your profile:</p>
+          <a href="${Deno.env.get("APP_URL")}/complete-profile?email=${encodeURIComponent(email)}">Complete Your Profile</a>
+          <p>Let's build something amazing together!</p>
+        `;
+        break;
+        
+      default:
+        subject = "Welcome to BLKOUTNXT!";
+        welcomeContent = `
+          <h1>Welcome to BLKOUTNXT, ${firstName}!</h1>
+          <p>Thank you for joining our community. We're excited to have you on board!</p>
+          <p>To get started, please complete your profile:</p>
+          <a href="${Deno.env.get("APP_URL")}/complete-profile?email=${encodeURIComponent(email)}">Complete Your Profile</a>
+        `;
+    }
+    
+    const response = await fetch("https://api.sendfox.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -165,17 +256,16 @@ async function sendWelcomeEmail(apiKey: string, email: string, firstName: string
       },
       body: JSON.stringify({
         to: email,
-        template_id: "welcome-template", // Replace with your actual template ID in Show
-        personalization: {
-          first_name: firstName
-        }
+        subject: subject,
+        category: userType || "general",
+        html: welcomeContent
       }),
     });
 
     const data = await response.json();
     
     if (!response.ok) {
-      console.error("Show API error:", data);
+      console.error("SendFox API error:", data);
       return { 
         success: false, 
         error: data.message || "Unknown error sending welcome email" 
@@ -200,20 +290,20 @@ async function sendSurveyEmail(apiKey: string, email: string, firstName: string,
     // Base personalization for all user types
     const personalization: Record<string, any> = {
       first_name: firstName,
-      survey_link: "https://your-survey-link.com", // Replace with your actual survey link
+      survey_link: `${Deno.env.get("APP_URL")}/surveys/community-survey`,
       open_question_included: true
     };
     
     // Customize content based on user type
     if (userType === "black_queer_man") {
       personalization.membership_question = true;
-      personalization.membership_link = "https://blkouthub.com/membership"; // Replace with actual link
+      personalization.membership_link = `${Deno.env.get("APP_URL")}/membership`;
       personalization.meeting_option = false;
     } 
     else if (userType === "organizer" || userType === "organization") {
       personalization.membership_question = false;
       personalization.meeting_option = true;
-      personalization.meeting_link = "https://calendly.com/your-meeting-link"; // Replace with actual link
+      personalization.meeting_link = `${Deno.env.get("APP_URL")}/schedule-meeting`;
     }
     else {
       // Default for "ally" or unspecified user types
@@ -221,7 +311,7 @@ async function sendSurveyEmail(apiKey: string, email: string, firstName: string,
       personalization.meeting_option = false;
     }
     
-    const response = await fetch("https://api.showapp.io/send", {
+    const response = await fetch("https://api.sendfox.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -229,15 +319,29 @@ async function sendSurveyEmail(apiKey: string, email: string, firstName: string,
       },
       body: JSON.stringify({
         to: email,
-        template_id: "survey-template", // Replace with your actual template ID in Show
-        personalization: personalization
+        subject: "Help Shape BLKOUTNXT - Complete Our Survey",
+        category: "feedback",
+        html: `
+          <h1>Hi ${firstName}!</h1>
+          <p>We'd love to hear your thoughts about BLKOUTNXT and how we can better serve our community.</p>
+          <p>Please take a moment to complete our survey:</p>
+          <a href="${personalization.survey_link}">Take the Survey</a>
+          ${personalization.membership_question ? `
+            <p>As a Black Queer Man, you're eligible for our membership program:</p>
+            <a href="${personalization.membership_link}">Learn More About Membership</a>
+          ` : ''}
+          ${personalization.meeting_option ? `
+            <p>Would you like to schedule a meeting with our team?</p>
+            <a href="${personalization.meeting_link}">Schedule a Meeting</a>
+          ` : ''}
+        `
       }),
     });
 
     const data = await response.json();
     
     if (!response.ok) {
-      console.error("Show API error:", data);
+      console.error("SendFox API error:", data);
       return { 
         success: false, 
         error: data.message || "Unknown error sending survey email" 
@@ -259,7 +363,7 @@ async function sendReminderEmail(apiKey: string, email: string, firstName: strin
   try {
     console.log(`Sending reminder email to: ${email}`);
     
-    const response = await fetch("https://api.showapp.io/send", {
+    const response = await fetch("https://api.sendfox.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -267,17 +371,20 @@ async function sendReminderEmail(apiKey: string, email: string, firstName: strin
       },
       body: JSON.stringify({
         to: email,
-        template_id: "reminder-template", // Replace with your actual template ID in Show
-        personalization: {
-          first_name: firstName
-        }
+        subject: "Complete Your BLKOUTNXT Profile",
+        category: "reminder",
+        html: `
+          <h1>Hi ${firstName}!</h1>
+          <p>We noticed you haven't completed your profile yet. Take a moment to tell us more about yourself:</p>
+          <a href="${Deno.env.get("APP_URL")}/complete-profile?email=${encodeURIComponent(email)}">Complete Your Profile</a>
+        `
       }),
     });
 
     const data = await response.json();
     
     if (!response.ok) {
-      console.error("Show API error:", data);
+      console.error("SendFox API error:", data);
       return { 
         success: false, 
         error: data.message || "Unknown error sending reminder email" 

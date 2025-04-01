@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -40,43 +39,26 @@ export function SignupForm() {
       
       if (signupError) throw signupError;
       
-      // Send welcome email and schedule follow-up survey
-      try {
-        // Send the welcome email
-        const welcomeResponse = await supabase.functions.invoke('send-email', {
-          body: {
-            email,
-            firstName: name.split(' ')[0], // Get first name
-            emailType: 'welcome'
-          }
-        });
-        
-        if (welcomeResponse.error) {
-          console.error('Error sending welcome email:', welcomeResponse.error);
-        }
-        
-        // Schedule a follow-up survey email after 3 days
-        const userId = data?.user?.id;
-        if (userId) {
-          const reminderResponse = await supabase.functions.invoke('schedule-reminder', {
-            body: {
-              email,
-              userId,
-              firstName: name.split(' ')[0],
-              userType,
-              reminderAfterDays: 3
-            }
-          });
-          
-          if (reminderResponse.error) {
-            console.error('Error scheduling survey reminder:', reminderResponse.error);
-          }
-        }
-      } catch (emailError) {
-        // Log but don't block registration if email sending fails
-        console.error('Error in email workflow:', emailError);
+      // Send data to Edge Function
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/handle-signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          userType,
+          organisation: undefined // Will be populated if needed
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to process registration data');
       }
-      
+
       // Show success toast
       toast({
         title: "Registration successful",

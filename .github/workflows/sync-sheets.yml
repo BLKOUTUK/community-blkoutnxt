@@ -11,5 +11,5 @@ jobs:
     steps:
       - name: Call Supabase Edge Function
         run: |
-          curl -X POST https://onboardblkoutnxt.supabase.co/functions/v1/sync-to-sheets \
+          curl -X POST https://vmitcgaxrrcqfollxiil.supabase.co/functions/v1/sync-to-sheets \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" 

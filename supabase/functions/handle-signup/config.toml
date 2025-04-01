@@ -1,0 +1,12 @@
+[global]
+runtime = "deno"
+entrypoint = "index.ts"
+
+[global.environment]
+SUPABASE_URL = "https://vmitcgaxrrcqfollxiil.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtaXRjZ2F4cnJjcWZvbGx4aWlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEzMDc4MjEsImV4cCI6MjA1Njg4MzgyMX0.KB3MqOWpCQ_QEzwa4mpL0wW8BrQIljpJ65MAxeQJKpQ"
+AIRTABLE_API_KEY = "patBe8NGEAoPCsRw4.9f29161843f7a76de940976f4065656beea7794fbca4fba57a4d8929645302f1"
+AIRTABLE_BASE_ID = "appdeFjS20HfhAEb6"
+SHOW_API_KEY = "bc5485716d7b5afc05292c3c581173b978725hphxz"
+APP_DEV_URL = "http://localhost:8080"
+APP_URL = "https://bejewelled-dusk-2e53a8.netlify.app/" 
