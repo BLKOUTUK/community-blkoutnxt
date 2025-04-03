@@ -14,6 +14,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Preview from "./pages/Preview";
 import Campaigns from "./pages/Campaigns";
 import CampaignDetail from "./pages/CampaignDetail";
+import Rewards from "./pages/dashboard/Rewards";
 
 const queryClient = new QueryClient();
 
@@ -32,13 +33,21 @@ const App = () => (
             <Route path="/preview" element={<Preview />} />
             <Route path="/campaigns" element={<Campaigns />} />
             <Route path="/campaigns/:id" element={<CampaignDetail />} />
-            <Route 
-              path="/dashboard/*" 
+            <Route
+              path="/dashboard"
               element={
                 <ProtectedRoute>
                   <Dashboard />
                 </ProtectedRoute>
-              } 
+              }
+            />
+            <Route
+              path="/dashboard/rewards"
+              element={
+                <ProtectedRoute>
+                  <Rewards />
+                </ProtectedRoute>
+              }
             />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
